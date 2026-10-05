@@ -7,8 +7,24 @@ const requireCredits=!demoOnly&&!!(window.FLAME_CONFIG||{}).requireCredits;
 let screen='menu',previous=performance.now(),accumulator=0,audio=null,muted=false,lastStatus='',lastState='playing',paidMode=requireCredits,busy=false;
 function sound(name){if(muted||!audio)return;try{const osc=audio.createOscillator(),gain=audio.createGain();const pitches={jump:430,transform:130,sword:720,fire:290,missile:100,collect:960,hurt:75,explode:65,pulse:90,slam:45,laser:200,win:780,notice:520};const duration=name==='pulse'?.45:name==='transform'?.25:.12;osc.type=['collect','notice','win'].includes(name)?'sine':'sawtooth';osc.frequency.setValueAtTime(pitches[name]||200,audio.currentTime);osc.frequency.exponentialRampToValueAtTime((pitches[name]||200)*(name==='collect'?1.6:.4),audio.currentTime+duration);gain.gain.setValueAtTime(.035,audio.currentTime);gain.gain.exponentialRampToValueAtTime(.001,audio.currentTime+duration);osc.connect(gain);gain.connect(audio.destination);osc.start();osc.stop(audio.currentTime+duration)}catch{}}
 function initAudio(){try{audio=audio||new(window.AudioContext||window.webkitAudioContext)();audio.resume().catch(()=>{})}catch{}}
-function focus(){canvas.focus()}
-function touchLayout(){const preference=(window.FLAME_CONFIG||{}).touch;const enabled=preference==='on'||preference!=='off'&&(window.matchMedia('(any-pointer: coarse)').matches||window.innerWidth<=900);$('game-shell').classList.toggle('touch-enabled',enabled);$('touch-controls').hidden=!enabled;$('mobile-tip').hidden=!enabled;$('menu-help').textContent=enabled?'左侧摇杆移动 · 右侧跳跃 / 变形 / 攻击':'A / D 移动 · 空格跳跃 · V 变形 · Esc 暂停';controls.clear()}
+function focus(){canvas.focus({preventScroll:true})}
+let lastTouchEnabled=null,lastViewportWidth=null,lastLandscape=null;
+function touchLayout(){
+ const viewport=window.visualViewport;
+ const height=viewport&&(!viewport.scale||viewport.scale===1)?viewport.height:window.innerHeight;
+ if(Number.isFinite(height)&&height>0)$('game-shell').style.setProperty('--viewport-height',`${Math.floor(height)}px`);
+ const preference=(window.FLAME_CONFIG||{}).touch;
+ const enabled=preference==='on'||preference!=='off'&&(window.matchMedia('(any-pointer: coarse)').matches||window.innerWidth<=900);
+ const width=Math.floor(window.innerWidth);
+ const landscape=window.innerWidth>window.innerHeight;
+ // A browser toolbar may change only the height while a thumb is still held.
+ // Keep that gesture; release captures when rotating or remapping control widths.
+ if(enabled!==lastTouchEnabled||width!==lastViewportWidth||landscape!==lastLandscape)controls.clear();
+ lastTouchEnabled=enabled;lastViewportWidth=width;lastLandscape=landscape;
+ $('game-shell').classList.toggle('touch-enabled',enabled);$('touch-controls').hidden=!enabled;$('mobile-tip').hidden=!enabled;
+ $('menu-help').textContent=enabled?'左侧摇杆移动 · 右侧跳跃 / 变形 / 攻击':'A / D 移动 · 空格跳跃 · V 变形 · Esc 暂停';
+}
+function orientationLayout(){controls.clear();touchLayout()}
 function syncCreditUI(message=''){
  $('play-modes').hidden=demoOnly;
  $('mode-free').classList.toggle('active',!paidMode);$('mode-paid').classList.toggle('active',paidMode);$('mode-free').setAttribute('aria-pressed',String(!paidMode));$('mode-paid').setAttribute('aria-pressed',String(paidMode));$('recharge').hidden=!paidMode;$('recharge').disabled=!credits.available;
@@ -29,6 +45,11 @@ async function checkPayment(){if(busy)return;busy=true;$('refresh-credits').disa
 const controls=new FlameInput.Controller({joystick:$('joystick'),knob:$('joystick-knob'),buttons:document.querySelectorAll('[data-action]'),isPlaying:()=>screen==='playing'&&game.state==='playing'&&$('payment').hidden,onPause:pause,onMute:()=>{muted=!muted},onStart:()=>{if(screen==='menu')start()}});
 $('start').addEventListener('click',start);$('mode-free').addEventListener('click',()=>selectMode(false));$('mode-paid').addEventListener('click',()=>selectMode(true));$('resume').addEventListener('click',pause);$('pause-button').addEventListener('click',pause);$('restart').addEventListener('click',start);$('retry').addEventListener('click',retry);$('result-home').addEventListener('click',()=>home());$('recharge').addEventListener('click',openPayment);$('buy-credits').addEventListener('click',buy);$('refresh-credits').addEventListener('click',checkPayment);$('payment-close').addEventListener('click',()=>{$('payment').hidden=true;syncCreditUI();if(screen==='playing')focus()});
 window.addEventListener('blur',()=>{controls.clear();if(screen==='playing'&&game.state==='playing')pause()});document.addEventListener('visibilitychange',()=>{if(document.hidden&&screen==='playing'&&game.state==='playing')pause()});window.addEventListener('resize',touchLayout);
+window.addEventListener('orientationchange',orientationLayout);
+window.screen?.orientation?.addEventListener('change',orientationLayout);
+window.visualViewport?.addEventListener('resize',touchLayout);
+window.visualViewport?.addEventListener('scroll',touchLayout);
+window.matchMedia('(any-pointer: coarse)').addEventListener?.('change',touchLayout);
 function frame(now){const dt=Math.min(.1,(now-previous)/1000);previous=now;if(screen==='playing'&&game.state==='playing'){accumulator+=dt;while(accumulator>=1/120&&game.state==='playing'){game.update(1/120,controls.read());accumulator-=1/120}for(const event of game.events)sound(event);game.events=[]}else accumulator=0;
  renderer.draw(game,screen,muted,now/1000);
  if(game.state!==lastState){lastState=game.state;if(game.state==='dead'||game.state==='won'){screen='result';controls.clear();$('result').hidden=false;$('pause-button').hidden=true;const won=game.state==='won';$('result-tag').textContent=won?'ENERGY CORE / 01 COLLECTED':'SYSTEM / REBOOT';$('result-title').textContent=won?'第一枚能量核心获得！':'装甲需要修复';$('result-text').textContent=won?`第二世界：沙漠峡谷 已解锁（后续章节）\n用时 ${Math.floor(game.time/60)} 分 ${Math.floor(game.time%60)} 秒 · 齿轮 ${game.player.gears} · 奖杯 ${game.player.trophy}/1 · 零件 ${game.player.parts}/2`:'从最近的检查点重启，保留已收集的物品。';const costs=paidMode&&(!credits.config||credits.config.continueCostsCredit!==false);$('retry').textContent=won?(paidMode?'再次投币挑战 · 1 币 →':'再次挑战 →'):costs?'投币续关 · 1 币 →':'检查点重启 →';$('retry').focus();syncCreditUI()}}

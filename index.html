@@ -4,7 +4,7 @@
   <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
   <meta name="theme-color" content="#071521">
   <title>烈焰战神：极速变形</title>
-  <link rel="stylesheet" href="style.css">
+  <link rel="stylesheet" href="style.css?v=20261005-ergonomic">
 </head>
 <body>
   <main class="game-shell" id="game-shell">
@@ -29,15 +29,20 @@
     <div id="session-credit" class="session-credit" hidden></div>
     </div>
     <section id="touch-controls" class="touch-controls" aria-label="触屏控制" hidden>
-      <div class="joystick-group"><div id="joystick" class="joystick" role="group" aria-label="左右移动摇杆"><span class="stick-arrows" aria-hidden="true">‹　›</span><div id="joystick-knob" class="joystick-knob"></div></div><span class="stick-caption">移动</span></div>
-      <div class="touch-actions">
-        <button data-action="boost" class="touch-key boost"><span>»</span><small>加速</small></button>
-        <button data-action="transform" class="touch-key transform"><span>⇄</span><small>变形</small></button>
-        <button data-action="jump" class="touch-key jump"><span>↑</span><small>跳跃</small></button>
-        <button data-action="sword" class="touch-key weapon"><span>J</span><small>激光剑</small></button>
-        <button data-action="fire" class="touch-key weapon"><span>K</span><small>火焰炮</small></button>
-        <button data-action="missile" class="touch-key weapon"><span>L</span><small>导弹</small></button>
-        <button data-action="pulse" class="touch-key pulse"><span>Q</span><small>冲击波</small></button>
+      <div class="joystick-group touch-left"><div id="joystick" class="joystick" role="group" aria-label="左右移动摇杆"><span class="stick-arrows" aria-hidden="true">‹　›</span><div id="joystick-knob" class="joystick-knob"></div></div><span class="stick-caption">移动</span></div>
+      <div class="touch-center" aria-hidden="true"></div>
+      <div class="touch-actions touch-right">
+        <div class="touch-action-group movement-actions" role="group" aria-label="移动技能">
+          <button data-action="boost" class="touch-key boost"><span>»</span><small>加速</small></button>
+          <button data-action="transform" class="touch-key transform"><span>⇄</span><small>变形</small></button>
+          <button data-action="jump" class="touch-key jump"><span>↑</span><small>跳跃</small></button>
+        </div>
+        <div class="touch-action-group weapon-actions" role="group" aria-label="机甲武器">
+          <button data-action="sword" class="touch-key weapon"><span>J</span><small>激光剑</small></button>
+          <button data-action="fire" class="touch-key weapon"><span>K</span><small>火焰炮</small></button>
+          <button data-action="missile" class="touch-key weapon"><span>L</span><small>导弹</small></button>
+          <button data-action="pulse" class="touch-key pulse"><span>Q</span><small>冲击波</small></button>
+        </div>
       </div>
     </section>
     <div class="mobile-tip" id="mobile-tip" hidden>横屏更好玩 · 左手摇杆移动，右手跳跃 / 变形 / 攻击</div>
@@ -47,6 +52,6 @@
   <script src="render.js"></script>
   <script src="input.js"></script>
   <script src="credits.js"></script>
-  <script src="app.js"></script>
+  <script src="app.js?v=20261005-ergonomic"></script>
 </body>
 </html>
