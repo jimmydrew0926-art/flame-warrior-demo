@@ -1,0 +1,52 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
+  <meta name="theme-color" content="#071521">
+  <title>烈焰战神：极速变形</title>
+  <link rel="stylesheet" href="style.css">
+</head>
+<body>
+  <main class="game-shell" id="game-shell">
+    <div class="stage">
+    <canvas id="game" width="1280" height="720" aria-label="烈焰战神，A D 移动、空格跳跃、V 变形" tabindex="0"></canvas>
+    <div id="menu" class="overlay">
+      <div class="eyebrow">FLAME WARRIOR / DEMO 01</div>
+      <h1>烈焰战神<span>极速变形</span></h1>
+      <p class="intro">在霓虹尽头，唤醒你的另一种力量。</p>
+      <div class="mission"><span>01 / 未来城市</span><strong>极速突围</strong><p>冲过断桥，突破封锁，夺回第一枚能量核心。</p></div>
+      <div id="play-modes" class="play-modes" role="group" aria-label="游玩模式"><button id="mode-free" class="mode active" aria-pressed="true">免费试玩</button><button id="mode-paid" class="mode" aria-pressed="false">投币闯关</button></div>
+      <div class="start-row"><button id="start">启动引擎 <span>→</span></button><button id="recharge" class="secondary" hidden>充值游戏币</button></div>
+      <p class="small" id="menu-help">A / D 移动 · 空格跳跃 · V 变形 · Esc 暂停</p>
+      <p class="credit-status" id="credit-status" role="status" hidden></p>
+      <div class="footer">单人冒险 · 键盘 / 触屏操作 <span>四个世界，一场救援。</span></div>
+    </div>
+    <div id="pause" class="modal" hidden><div><span class="eyebrow">SYSTEM / PAUSED</span><h2>稍作休整</h2><p>A / D 移动　Space 跳跃　Shift 跑车冲刺<br>V 变形　J 激光剑　K 火焰炮　L 导弹<br>Q 电磁冲击波　M 音效开关</p><button id="resume">继续冒险 →</button><button id="restart" class="secondary">重新开始本关</button></div></div>
+    <div id="result" class="modal" hidden><div><span class="eyebrow" id="result-tag"></span><h2 id="result-title"></h2><p id="result-text"></p><button id="retry"></button><button id="result-home" class="secondary">返回主菜单</button></div></div>
+    <div id="payment" class="modal" hidden><div><span class="eyebrow">ARCADE / 游戏币</span><h2>充值游戏币</h2><p id="payment-text">充值服务尚未开放。</p><button id="buy-credits" disabled>创建充值订单</button><a id="checkout-link" class="button-link" target="_blank" rel="noopener noreferrer" hidden>打开支付页面 →</a><button id="refresh-credits" class="secondary" hidden>我已支付，查询到账</button><button id="payment-close" class="secondary">返回游戏</button></div></div>
+    <div id="live-status" class="sr-only" role="status" aria-live="polite"></div>
+    <button id="pause-button" class="utility" hidden aria-label="暂停游戏">Ⅱ</button>
+    <div id="session-credit" class="session-credit" hidden></div>
+    </div>
+    <section id="touch-controls" class="touch-controls" aria-label="触屏控制" hidden>
+      <div class="joystick-group"><div id="joystick" class="joystick" role="group" aria-label="左右移动摇杆"><span class="stick-arrows" aria-hidden="true">‹　›</span><div id="joystick-knob" class="joystick-knob"></div></div><span class="stick-caption">移动</span></div>
+      <div class="touch-actions">
+        <button data-action="boost" class="touch-key boost"><span>»</span><small>加速</small></button>
+        <button data-action="transform" class="touch-key transform"><span>⇄</span><small>变形</small></button>
+        <button data-action="jump" class="touch-key jump"><span>↑</span><small>跳跃</small></button>
+        <button data-action="sword" class="touch-key weapon"><span>J</span><small>激光剑</small></button>
+        <button data-action="fire" class="touch-key weapon"><span>K</span><small>火焰炮</small></button>
+        <button data-action="missile" class="touch-key weapon"><span>L</span><small>导弹</small></button>
+        <button data-action="pulse" class="touch-key pulse"><span>Q</span><small>冲击波</small></button>
+      </div>
+    </section>
+    <div class="mobile-tip" id="mobile-tip" hidden>横屏更好玩 · 左手摇杆移动，右手跳跃 / 变形 / 攻击</div>
+  </main>
+  <script src="config.js"></script>
+  <script src="core.js"></script>
+  <script src="render.js"></script>
+  <script src="input.js"></script>
+  <script src="credits.js"></script>
+  <script src="app.js"></script>
+</body>
+</html>

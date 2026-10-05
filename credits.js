@@ -1,0 +1,15 @@
+(function(root){
+'use strict';
+class CreditClient {
+ constructor(options={}){this.base=(options.apiBase||'').replace(/\/$/,'');this.demoOnly=!!options.demoOnly;this.available=false;this.config=null;this.balance=0;this.playId=null;this.order=null;this.pendingStart=null;this.pendingContinue=null;this.pendingOrder=null}
+ id(){return root.crypto&&root.crypto.randomUUID?root.crypto.randomUUID():`request-${Date.now()}-${Math.random().toString(36).slice(2)}`}
+ async request(path,body){if(this.demoOnly)throw new Error('在线试玩版不提供充值服务');const controller=new AbortController(),timer=setTimeout(()=>controller.abort(),10000);try{const response=await fetch(this.base+path,{method:body?'POST':'GET',headers:body?{'Content-Type':'application/json'}:{},credentials:'include',signal:controller.signal,...(body?{body:JSON.stringify(body)}:{})});let data;try{data=await response.json()}catch{throw new Error('充值服务暂未开放')}if(!response.ok){const detail=data.error;const error=new Error(data.message||(detail&&detail.message)||(typeof detail==='string'?detail:null)||'请求未完成，请稍后重试');error.code=data.code||(detail&&detail.code);error.status=response.status;throw error}return data}finally{clearTimeout(timer)}}
+ async init(){if(this.demoOnly){this.config={ready:false,allowFreePreview:true,demoOnly:true};return this.config}if(root.location&&root.location.protocol==='file:')return null;try{this.config=await this.request('/api/config');this.available=!!this.config.ready;if(this.available){const session=await this.request('/api/session',{});this.balance=session.credits;await this.refresh()}return this.config}catch{this.available=false;return null}}
+ async refresh(){if(!this.available)return this.balance;const data=await this.request('/api/credits');this.balance=data.credits;return this.balance}
+ async start(){if(!this.available)throw new Error('投币服务尚未开放，请先免费试玩');this.pendingStart=this.pendingStart||this.id();const data=await this.request('/api/play',{requestId:this.pendingStart});this.balance=data.credits;this.playId=data.play.id;this.pendingStart=null;this.pendingContinue=null;return data}
+ async continue(){if(!this.available||!this.playId)throw new Error('本局记录不可用，请返回主菜单');this.pendingContinue=this.pendingContinue||this.id();const data=await this.request('/api/continue',{requestId:this.pendingContinue,playId:this.playId});this.balance=data.credits;this.pendingContinue=null;return data}
+ async checkout(){if(!this.available)throw new Error('充值服务尚未开放');this.pendingOrder=this.pendingOrder||this.id();const data=await this.request('/api/orders',{requestId:this.pendingOrder,packageId:'single'});const url=new URL(data.checkout.url);if(url.protocol!=='https:')throw new Error('支付链接不可用，请稍后重试');this.order=data.order;this.pendingOrder=null;return {...data,url:url.href}}
+ async checkOrder(){if(!this.order)return this.refresh();const data=await this.request('/api/orders/'+encodeURIComponent(this.order.id));await this.refresh();return data}
+}
+root.FlameCredits={CreditClient};if(typeof module!=='undefined')module.exports=root.FlameCredits;
+})(typeof window!=='undefined'?window:globalThis);
